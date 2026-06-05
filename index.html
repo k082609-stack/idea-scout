@@ -17,6 +17,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script defer src="/_vercel/insights/script.js"></script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2SZ0HNHDH7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2SZ0HNHDH7');
+</script>
 <style>
   :root{
     --brand:#2563eb; --brand-dark:#1d4ed8; --brand-deep:#1e3a8a;
@@ -273,7 +281,17 @@ function renderFilters(){
   }).join('');
   filtersEl.querySelectorAll('[data-id]').forEach(el=>{
     const evt = el.tagName==='SELECT' ? 'change':'input';
-    el.addEventListener(evt, e=>{ state[e.target.dataset.id]=e.target.value; renderResults(); });
+    el.addEventListener(evt, e=>{
+      state[e.target.dataset.id]=e.target.value;
+      // GA4イベント：フィルター使用
+      if(typeof gtag !== 'undefined' && e.target.value){
+        gtag('event', 'filter_used', {
+          'filter_type': e.target.dataset.id,
+          'filter_value': e.target.value
+        });
+      }
+      renderResults();
+    });
   });
 }
 
@@ -332,6 +350,13 @@ const detailBody= document.getElementById('detailBody');
 function openDetail(idx){
   const idea = IDEAS[idx];
   if(!idea) return;
+  // GA4イベント：カード詳細を開いた
+  if(typeof gtag !== 'undefined'){
+    gtag('event', 'card_detail_open', {
+      'idea_title': idea["タイトル"] || '',
+      'idea_category': idea["ターゲット"] || ''
+    });
+  }
   const h = HEAT_DISPLAY[idea["注目度"]] || {cls:'new',label:idea["注目度"]||''};
   detailBody.innerHTML = `
     <div class="d-top">
